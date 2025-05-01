@@ -9,7 +9,7 @@ import {
   fetchLikedPosts,
   fetchUserPosts,
   togglePostLike,
-} from "../controllers/post.controllers.js";
+} from "../controllers/postController.js";
 
 const router = express.Router();
 
