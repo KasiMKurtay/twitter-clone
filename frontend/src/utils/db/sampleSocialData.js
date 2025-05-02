@@ -1,10 +1,10 @@
 export const POSTS = [
   {
     _id: "101",
-    text: "Check out my latest 3D animation using Blender 🎥",
+    text: "Yeni Node.js projem yayında Express.js ile API oluşturmayı test ettim!",
     img: "/posts/post1.png",
     user: {
-      username: "aiwa01",
+      username: "kasimkurtay",
       profileImg: "/avatars/boy1.png",
       fullName: "Kasım Kurtay",
     },
@@ -23,7 +23,7 @@ export const POSTS = [
   },
   {
     _id: "102",
-    text: "Feeling productive today! Just finished a new React component 💻",
+    text: "Feeling productive today! Just built a new API route with Node.js 💻",
     user: {
       username: "alexsmith",
       profileImg: "/avatars/boy2.png",

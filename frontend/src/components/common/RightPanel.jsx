@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { USERS_FOR_RIGHT_PANEL } from "../../../utils/db/sampleSocialData";
+import { USERS_FOR_RIGHT_PANEL } from "../../utils/db/sampleSocialData";
+import RightPanelSkeleton from "../skeletons/RightPanelSkeleton";
 
 const RightPanel = () => {
   const isLoading = false;
@@ -10,13 +11,13 @@ const RightPanel = () => {
       <div className="bg-[#16181C] p-4 rounded-md sticky top-2 ">
         <p className="font-bold">Who to follow</p>
         <div className="flex flex-col gap-4">
-          {/* {isLoading && (
+          {isLoading && (
             <>
               <RightPanelSkeleton />
               <RightPanelSkeleton />
               <RightPanelSkeleton />
             </>
-          )} */}
+          )}
           {!isLoading &&
             USERS_FOR_RIGHT_PANEL?.map((user) => (
               <Link
