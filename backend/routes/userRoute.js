@@ -7,11 +7,13 @@ import {
   updateUser,
 } from "../controllers/userController.js";
 
-const router = express.Router();
+const router = express.Router(); //Yeni bir router nesnesi oluşturuyor
 
-router.get("/profile/:username", protectRoute, getUserProfile);
-router.get("/suggested", protectRoute, getSuggestedUsers);
-router.post("/follow/:id", protectRoute, followUnfollowUser);
-router.post("/update", protectRoute, updateUser);
+// AŞŞAĞIDA OLUŞTURULAN TÜM ROTALAR protectRoute'ile auth koruması altında kullanılıyor.
+
+router.get("/profile/:username", protectRoute, getUserProfile); //Kullanıcının profil bilgilerini getiren  GET endpointi olusturuyor
+router.get("/suggested", protectRoute, getSuggestedUsers); //Kullanıcının takip edebileceği kullanıcıları getiren GET endpointi olusturuyor
+router.post("/follow/:id", protectRoute, followUnfollowUser); //Kullanıcının takip edebileceği kullanıcıları getiren GET endpointi olusturuyor
+router.post("/update", protectRoute, updateUser); //Kullanıcının takip edebileceği kullanıcıları getiren GET endpointi olusturuyor
 
 export default router;

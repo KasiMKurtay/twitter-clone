@@ -4,45 +4,52 @@ import bcrypt from "bcryptjs";
 
 export const signup = async (req, res) => {
   try {
-    const { fullName, username, email, password } = req.body;
+    const { fullName, username, email, password } = req.body; //Gelen verileri aldık
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; //Email formatını kontrol ediyoruz
     if (!emailRegex.test(email)) {
+      //Email formatını kontrol ediyoruz
       return res.status(400).json({ error: "Invalid email format" });
     }
 
-    const existingUser = await User.findOne({ username });
+    const existingUser = await User.findOne({ username }); //Kullanıcıyı username'e göre arar
     if (existingUser) {
+      //Kullanıcı bulunamazsa hata mesajı döner
       return res.status(400).json({ error: "Username is already taken" });
     }
 
-    const existingEmail = await User.findOne({ email });
+    const existingEmail = await User.findOne({ email }); //Kullanıcıyı email'e göre arar
     if (existingEmail) {
+      //Kullanıcı bulunamazsa hata mesajı döner
       return res.status(400).json({ error: "Email is already taken" });
     }
 
     if (password.length < 6) {
+      //Yeni sifrenin uzunlugunu kontrol ediyoruz
       return res
         .status(400)
         .json({ error: "Password must be at least 6 characters long" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(10); //Sifreleme yapmak icin salt olusturuyoruz
+    const hashedPassword = await bcrypt.hash(password, salt); //Sifreyi hashliyoruz
 
     const newUser = new User({
-      fullName,
+      //Yeni kullanıcı olusturuyoruz
+      fullName, //Gelen verileri ekliyoruz
       username,
       email,
-      password: hashedPassword,
+      password: hashedPassword, //Hashlenmis sifreyi ekliyoruz
     });
 
     if (newUser) {
-      generateTokenAndSetCookie(newUser._id, res);
-      await newUser.save();
+      //Yeni kullanıcı olusturulduysa
+      generateTokenAndSetCookie(newUser._id, res); //Token ve cookie olusturuyoruz
+      await newUser.save(); //Yeni kullanıcıyı veritabanına kaydediyoruz
 
       res.status(201).json({
-        _id: newUser._id,
+        //Kullanıcı bilgilerini döner
+        _id: newUser._id, //Kullanıcı ID'sini döner
         fullName: newUser.fullName,
         username: newUser.username,
         email: newUser.email,
@@ -62,20 +69,23 @@ export const signup = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
+    const { username, password } = req.body; //Gelen verileri aldık
+    const user = await User.findOne({ username }); //Kullanıcıyı username'e göre arar
     const isPasswordCorrect = await bcrypt.compare(
+      //Sifreyi karsılastırıyoruz
       password,
       user?.password || ""
     );
 
     if (!user || !isPasswordCorrect) {
+      //Kullanıcı bulunamazsa veya sifre yanlışsa
       return res.status(400).json({ error: "Invalid username or password" });
     }
 
-    generateTokenAndSetCookie(user._id, res);
+    generateTokenAndSetCookie(user._id, res); //Token ve cookie olusturuyoruz
 
     res.status(200).json({
+      //Kullanıcı bilgilerini döner
       _id: user._id,
       fullName: user.fullName,
       username: user.username,
@@ -93,7 +103,7 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    res.cookie("jwt", "", { maxAge: 0 });
+    res.cookie("jwt", "", { maxAge: 0 }); //Cookie'yi sıfırlar
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     console.log("Error in logout controller", error.message);
@@ -103,7 +113,7 @@ export const logout = async (req, res) => {
 
 export const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select("-password");
+    const user = await User.findById(req.user._id).select("-password"); //Kullanıcının bilgilerini alır
     res.status(200).json(user);
   } catch (error) {
     console.log("Error in getMe controller", error.message);

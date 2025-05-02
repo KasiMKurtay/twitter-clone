@@ -10,28 +10,30 @@ import notificationRoute from "./routes/notificationRoute.js";
 
 import connectMongoDB from "./db/connectMongoDB.js";
 
-dotenv.config();
+dotenv.config(); //.env dosyasındaki değişkenleri kullanabilmek için
 
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  //cloudinary bağlantısı
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, //cloudinary cloud name .env'den alınır
+  api_key: process.env.CLOUDINARY_API_KEY, //aynı şekilde
+  api_secret: process.env.CLOUDINARY_API_SECRET, //burasıda aynı şekilde
 });
 
-const app = express();
-const port = process.env.PORT || 5000;
+const app = express(); //express uygulaması başlatılır
+const port = process.env.PORT || 5000; //SUnucunun portu belirlenir
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); //JSON formatındaki istek gövdelerini parse edeiyoruz
+app.use(express.urlencoded({ extended: true })); //URL-encoded veri (form verisi) çözümlemesi yapar
 
-app.use(cookieParser());
+app.use(cookieParser()); //Cookie'leri parse eder
 
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/posts", postRoutes);
-app.use("/api/notifications", notificationRoute);
+app.use("/api/auth", authRoutes); //api auth altında auth rotalarını kullanıma sunar
+app.use("/api/users", userRoutes); //api/users altında kullanıcı rotalarını kullanıma sunar
+app.use("/api/posts", postRoutes); //api posts altında rotalarını kullanıma sunar
+app.use("/api/notifications", notificationRoute); //api notifications altında rotalarını kullanıma sunar
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  //Belirtilen portta sunucuyu başlatır
+  console.log(`Server is running on port ${port}`); //Sunucu portunu yazdırır
   connectMongoDB();
 });
