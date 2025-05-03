@@ -4,13 +4,32 @@ import { MdHomeFilled } from "react-icons/md";
 import { IoNotifications } from "react-icons/io5";
 import { FaUser } from "react-icons/fa";
 import { BiLogOut } from "react-icons/bi";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const Sidebar = () => {
-  const data = {
-    fullName: "Kasim",
-    username: "kasimkurtay",
-    profileImg: "/avatars/boy1.png",
-  };
+  const queryClient = useQueryClient();
+
+  const { mutate } = useMutation({
+    mutationFn: async () => {
+      try {
+        const res = await fetch("/api/auth/logout", {
+          method: "POST",
+        });
+        const result = await res.json();
+        if (!res.ok || result.error) {
+          throw new Error("Something went wrong", result.error);
+        }
+      } catch (error) {
+        console.error("Something went wrong on logout", error.message);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+    },
+  });
+
+  const { data: authUser } = useQuery({ queryKey: ["authUser"] });
+
   return (
     <div className="md:flex-[2_2_0] w-18 max-w-52">
       <div className="sticky top-0 left-0 h-screen flex flex-col border-r border-gray-700 w-20 md:w-full">
@@ -38,7 +57,7 @@ const Sidebar = () => {
           </li>
           <li className="flex justify-center md:justify-start">
             <Link
-              to={`/profile/${data?.username}`}
+              to={`/profile/${authUser?.username}`}
               className="flex gap-3 items-center hover:bg-stone-900 transition-all rounded-full duration-300 py-2 pl-2 pr-4 max-w-fit cursor-pointer"
             >
               <FaUser />
@@ -46,15 +65,15 @@ const Sidebar = () => {
             </Link>
           </li>
         </ul>
-        {data && (
+        {authUser && (
           <Link
-            to={`/profile/${data.username}`}
+            to={`/profile/${authUser.username}`}
             className="mt-auto mb-10 flex gap-2 items-start transition-all duration-300 hover:bg-[#181818]  py-2 px-4 rounded-full"
           >
             <div className="avatar hidden md:inline-flex">
               <div className="w-8 rounded-full">
                 <img
-                  src={data?.profileImg || "avatar-placeholder.png"}
+                  src={authUser?.profileImg || "avatar-placeholder.png"}
                   alt="avatar"
                 />
               </div>
@@ -62,11 +81,17 @@ const Sidebar = () => {
             <div className="flex justify-center flex-1">
               <div className="hidden md:block">
                 <p className="text-white font-bold text-sm w-20 truncate">
-                  {data?.fullName}
+                  {authUser?.fullName}
                 </p>
-                <p className="text-slate-500 text-sm">@{data?.username}</p>
+                <p className="text-slate-500 text-sm">@{authUser?.username}</p>
               </div>
-              <BiLogOut className="size-5 cursor-pointer mt-3" />
+              <BiLogOut
+                onClick={(e) => {
+                  e.preventDefault();
+                  mutate();
+                }}
+                className="size-5 cursor-pointer mt-3"
+              />
             </div>
           </Link>
         )}
