@@ -11,24 +11,32 @@ const Sidebar = () => {
 
   const { mutate } = useMutation({
     mutationFn: async () => {
-      try {
-        const res = await fetch("/api/auth/logout", {
-          method: "POST",
-        });
-        const result = await res.json();
-        if (!res.ok || result.error) {
-          throw new Error("Something went wrong", result.error);
-        }
-      } catch (error) {
-        console.error("Something went wrong on logout", error.message);
+      const res = await fetch("/api/auth/logout", { method: "POST" });
+      const result = await res.json();
+
+      if (!res.ok || result.error) {
+        throw new Error(result.error || "Logout failed");
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
     },
+    onError: (error) => {
+      console.error("Logout error:", error.message);
+    },
   });
 
-  const { data: authUser } = useQuery({ queryKey: ["authUser"] });
+  const { data: authUser } = useQuery({
+    queryKey: ["authUser"],
+    queryFn: async () => {
+      const res = await fetch("/api/auth/me");
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Something went wrong");
+      }
+      return data;
+    },
+  });
 
   return (
     <div className="md:flex-[2_2_0] w-18 max-w-52">

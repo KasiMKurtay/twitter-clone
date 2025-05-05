@@ -100,7 +100,7 @@ const Post = ({ post }) => {
                           <div className="w-8 rounded-full">
                             <img
                               src={
-                                comment.user.profileImg ||
+                                comment.user?.profileImg ||
                                 "/avatar-placeholder.png"
                               }
                             />
@@ -109,10 +109,10 @@ const Post = ({ post }) => {
                         <div className="flex flex-col">
                           <div className="flex items-center gap-1">
                             <span className="font-bold">
-                              {comment.user.fullName}
+                              {comment.user?.fullName}
                             </span>
                             <span className="text-gray-700 text-sm">
-                              @{comment.user.username}
+                              @{comment.user?.username}
                             </span>
                           </div>
                           <div className="text-sm">{comment.text}</div>
