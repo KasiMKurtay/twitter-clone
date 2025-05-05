@@ -24,10 +24,12 @@ const Posts = ({ feedType, username, userId }) => {
   const {
     data: posts,
     isLoading,
+    isError,
+    error,
     refetch,
     isRefetching,
   } = useQuery({
-    queryKey: ["posts"],
+    queryKey: ["posts", feedType, username],
     queryFn: async () => {
       try {
         const res = await fetch(POST_ENDPOINT);
@@ -37,17 +39,16 @@ const Posts = ({ feedType, username, userId }) => {
           throw new Error(data.error || "Something went wrong");
         }
 
-        return data;
+        return data ?? null;
       } catch (error) {
-        throw new Error(error);
+        throw new Error(error.message || "An unexpected error occurred");
       }
     },
   });
 
   useEffect(() => {
     refetch();
-  }, [feedType, refetch, username]);
-
+  }, [feedType, username, refetch]);
   return (
     <>
       {(isLoading || isRefetching) && (
@@ -57,17 +58,28 @@ const Posts = ({ feedType, username, userId }) => {
           <PostSkeleton />
         </div>
       )}
-      {!isLoading && !isRefetching && posts?.length === 0 && (
-        <p className="text-center my-4">No posts in this tab. Switch 👻</p>
+
+      {isError && (
+        <div className="text-red-500 text-center">
+          <p>Bir hata oluştu: {error.message}</p>
+        </div>
       )}
+
+      {!isLoading && !isRefetching && posts?.length === 0 && (
+        <p className="text-center my-4">
+          Bu sekmede hiç gönderi yok. Farklı bir sekme seçin 👻
+        </p>
+      )}
+
       {!isLoading && !isRefetching && posts && (
         <div>
           {posts.map((post) => (
-            <Post key={post._id} post={post} />
+            <Post key={post?._id} post={post} />
           ))}
         </div>
       )}
     </>
   );
 };
+
 export default Posts;

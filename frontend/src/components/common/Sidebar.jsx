@@ -34,7 +34,7 @@ const Sidebar = () => {
       if (!res.ok) {
         throw new Error(data.error || "Something went wrong");
       }
-      return data;
+      return data ?? null;
     },
   });
 
@@ -91,7 +91,7 @@ const Sidebar = () => {
                 <p className="text-white font-bold text-sm w-20 truncate">
                   {authUser?.fullName}
                 </p>
-                <p className="text-slate-500 text-sm">@{authUser?.username}</p>
+                <p className="text-slate-500 text-sm">@{authUser.username}</p>
               </div>
               <BiLogOut
                 onClick={(e) => {

@@ -9,6 +9,7 @@ import ProfilePage from "./pages/profile/ProfilePage";
 import { Toaster } from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "./components/common/LoadingSpinner";
+
 const App = () => {
   const { data: authUser, isLoading } = useQuery({
     queryKey: ["authUser"],
@@ -16,20 +17,19 @@ const App = () => {
       try {
         const res = await fetch("/api/auth/me");
         const data = await res.json();
-        if (data.error) {
-          return null;
-        }
 
         if (!res.ok) {
-          throw new Error(data.error || "Something went wrong");
+          throw new Error(data?.error || "Something went wrong");
         }
-        return data;
+
+        return data ?? null; 
       } catch (error) {
-        throw new Error(error);
+        throw new Error(error?.message || "An unexpected error occurred");
       }
     },
     retry: false,
   });
+
   if (isLoading) {
     return (
       <div className="h-screen flex justify-center items-center">
@@ -37,6 +37,7 @@ const App = () => {
       </div>
     );
   }
+
   return (
     <div className="flex max-w-6xl mx-auto">
       {authUser && <Sidebar />}

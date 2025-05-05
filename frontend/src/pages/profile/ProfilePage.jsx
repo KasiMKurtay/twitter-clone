@@ -26,7 +26,7 @@ const ProfilePage = () => {
   const user = {
     _id: "1",
     fullName: "Kasim Kurtay",
-    username: "kasimkurtay",
+    username: "aiwa01",
     profileImg: "/avatars/boy2.png",
     coverImg: "/cover.png",
     bio: "Github : @KasiMKurtay",
