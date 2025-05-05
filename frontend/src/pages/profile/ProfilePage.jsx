@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 
 import Posts from "../../components/common/Posts";
 import ProfileSkeleton from "../../components/skeletons/ProfileSkeleton";
@@ -11,8 +11,11 @@ import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
+import { useQuery } from "@tanstack/react-query";
+import { formatPostDate } from "../../utils/date/function";
 
 const ProfilePage = () => {
+  const { username } = useParams();
   const [coverImg, setCoverImg] = useState(null);
   const [profileImg, setProfileImg] = useState(null);
   const [feedType, setFeedType] = useState("posts");
@@ -20,20 +23,28 @@ const ProfilePage = () => {
   const coverImgRef = useRef(null);
   const profileImgRef = useRef(null);
 
-  const isLoading = false;
   const isMyProfile = true;
 
-  const user = {
-    _id: "1",
-    fullName: "Kasim Kurtay",
-    username: "aiwa01",
-    profileImg: "/avatars/boy2.png",
-    coverImg: "/cover.png",
-    bio: "Github : @KasiMKurtay",
-    link: "https://github.com/KasiMKurtay",
-    following: ["1", "2", "3"],
-    followers: ["1", "2", "3"],
-  };
+  const {
+    data: user,
+    isLoading,
+    refetch,
+    isRefetching,
+  } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: async () => {
+      try {
+        const res = await fetch(`/api/users/profile/${username}`);
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Something went wrong");
+        }
+        return data ?? null;
+      } catch (error) {
+        throw new Error(error.message);
+      }
+    },
+  });
 
   const handleImgChange = (e, state) => {
     const file = e.target.files[0];
@@ -47,15 +58,21 @@ const ProfilePage = () => {
     }
   };
 
+  useEffect(() => {
+    refetch();
+  }, [refetch, username, feedType]);
+
+  const memberSince = formatPostDate(user?.createdAt);
+
   return (
     <>
       <div className="flex-[4_4_0]  border-r border-gray-700 min-h-screen ">
-        {isLoading && <ProfileSkeleton />}
-        {!isLoading && !user && (
+        {(isLoading || isRefetching) && <ProfileSkeleton />}
+        {!isLoading && !isRefetching && !user && (
           <p className="text-center text-lg mt-4">User not found</p>
         )}
         <div className="flex flex-col">
-          {!isLoading && user && (
+          {!isLoading && !isRefetching && user && (
             <>
               <div className="flex gap-10 px-4 py-2 items-center">
                 <Link to="/">
@@ -165,7 +182,7 @@ const ProfilePage = () => {
                   <div className="flex gap-2 items-center">
                     <IoCalendarOutline className="w-4 h-4 text-slate-500" />
                     <span className="text-sm text-slate-500">
-                      Joined July 2021
+                      {memberSince}
                     </span>
                   </div>
                 </div>
@@ -207,7 +224,7 @@ const ProfilePage = () => {
             </>
           )}
 
-          <Posts />
+          <Posts username={username} userId={user?._id} feedType={feedType} />
         </div>
       </div>
     </>
