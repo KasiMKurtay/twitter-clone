@@ -72,20 +72,20 @@ export const removePost = async (req, res) => {
 
 export const togglePostLike = async (req, res) => {
   try {
-    const currentUserId = req.user._id; //Şuanki kullanıcının ID'si
-    const { id: postId } = req.params; //Gönderinin ID'si
+    const currentUserId = req.user._id; // Şuanki kullanıcının ID'si
+    const { id: postId } = req.params; // Gönderinin ID'si
 
-    const postToLike = await Post.findById(postId); //Gönderiyi buluyoruz
+    const postToLike = await Post.findById(postId); // Gönderiyi buluyoruz
 
     if (!postToLike) {
-      //Gönderi bulunamazsa
+      // Gönderi bulunamazsa
       return res.status(404).json({ error: "Post not found" });
     }
 
-    const userLikedThisPost = postToLike.likes.includes(currentUserId); //Kullanıcı bu gönderiyi begenmiyor mu
+    const userLikedThisPost = postToLike.likes.includes(currentUserId); // Kullanıcı bu gönderiyi beğeniyor mu?
 
     if (userLikedThisPost) {
-      //Beğeni varsa kaldırıyoruz
+      // Beğeni varsa kaldırıyoruz
       await Post.updateOne(
         { _id: postId },
         { $pull: { likes: currentUserId } }
@@ -94,28 +94,37 @@ export const togglePostLike = async (req, res) => {
         { _id: currentUserId },
         { $pull: { likedPosts: postId } }
       );
-      res.status(200).json({ message: "Post unliked successfully" }); //Başarıyla begeniyi kaldırıyoruz
+
+      const updatedLikes = postToLike.likes.filter(
+        (id) => id.toString() !== currentUserId.toString()
+      ); // Beğeniyi kaldırıyoruz
+      return res.status(200).json(updatedLikes); // Başarıyla beğeni kaldırıyoruz
     } else {
+      // Beğeni yoksa ekliyoruz
       postToLike.likes.push(currentUserId);
+      await postToLike.save(); // Postu kaydediyoruz
+
+      // Kullanıcıyı güncelliyoruz
       await User.updateOne(
         { _id: currentUserId },
         { $push: { likedPosts: postId } }
       );
-      await postToLike.save();
 
+      // Bildirim gönderiyoruz
       const newNotification = new Notification({
-        //Begenme bildirimini oluşturuyoruz
         from: currentUserId,
         to: postToLike.user,
         type: "like",
       });
       await newNotification.save();
 
-      res.status(200).json({ message: "Post liked successfully" });
+      return res
+        .status(200)
+        .json({ likes: postToLike.likes, likeCount: postToLike.likes.length });
     }
   } catch (error) {
     console.log("Error in togglePostLike controller", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: error.message || "Internal server error" });
   }
 };
 
