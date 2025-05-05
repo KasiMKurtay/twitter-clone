@@ -2,25 +2,69 @@ import { useRef, useState } from "react";
 import { IoCloseSharp } from "react-icons/io5";
 import { CiImageOn } from "react-icons/ci";
 import { BsEmojiSmileFill } from "react-icons/bs";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 
 const CreatePost = () => {
   const [text, setText] = useState("");
   const [img, setImg] = useState(null);
-
   const imgReference = useRef(null);
 
-  const isPending = false;
-  const error = null;
+  const { data: authUser } = useQuery({
+    queryKey: ["authUser"],
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Something went wrong");
+        }
+        return data ?? null;
+      } catch (error) {
+        throw new Error(error.message || "An unexpected error occurred");
+      }
+    },
+  });
+  const queryClient = useQueryClient();
+
+  const {
+    mutate: createPost,
+    isPending,
+    isError,
+  } = useMutation({
+    mutationFn: async ({ text, img }) => {
+      try {
+        const res = await fetch("/api/posts/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text, img }),
+        });
+        const data = await res.json({ text, img });
+        if (!res.ok) {
+          throw new Error(data.error || "Something went wrong");
+        }
+        return data ?? null;
+      } catch (error) {
+        throw new Error(error.message || "An unexpected error occurred");
+      }
+    },
+    onSuccess: () => {
+      setText("");
+      setImg(null);
+      toast.success("Post created successfully");
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
+
   const ImgClose = () => {
     setImg(null);
   };
 
-  const data = {
-    profileImg: "/avatars/boy1.png",
-  };
   const handleClick = (e) => {
     e.preventDefault();
-    console.log("Post created successfully");
+    createPost({ text, img });
   };
 
   const handleImgChange = (e) => {
@@ -38,7 +82,7 @@ const CreatePost = () => {
       <div className="avatar">
         <div className="w-8 rounded-full">
           <img
-            src={data.profileImg || "/avatar-placeholder.png"}
+            src={authUser.profileImg || "/avatar-placeholder.png"}
             alt="avatar "
           />
         </div>
@@ -86,7 +130,7 @@ const CreatePost = () => {
             {isPending ? "Posting..." : "Post"}
           </button>
         </div>
-        {error && (
+        {isError && (
           <div className="text-red-500 text-sm">Something went wrong </div>
         )}
       </form>

@@ -11,7 +11,10 @@ import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "./components/common/LoadingSpinner";
 
 const App = () => {
-  const { data: authUser, isLoading } = useQuery({
+  const {
+    data: authUser,
+    isLoading,
+  } = useQuery({
     queryKey: ["authUser"],
     queryFn: async () => {
       try {
@@ -22,7 +25,7 @@ const App = () => {
           throw new Error(data?.error || "Something went wrong");
         }
 
-        return data ?? null; 
+        return data ?? null;
       } catch (error) {
         throw new Error(error?.message || "An unexpected error occurred");
       }
@@ -37,6 +40,8 @@ const App = () => {
       </div>
     );
   }
+
+
 
   return (
     <div className="flex max-w-6xl mx-auto">

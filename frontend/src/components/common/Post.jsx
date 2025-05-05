@@ -18,7 +18,18 @@ const Post = ({ post }) => {
   const [comment, setComment] = useState("");
   const { data: authUser } = useQuery({
     queryKey: ["authUser"],
-    queryFn: async () => {},
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Something went wrong");
+        }
+        return data ?? null;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
   });
 
   const queryClient = useQueryClient();

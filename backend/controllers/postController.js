@@ -9,34 +9,37 @@ export const createNewPost = async (req, res) => {
     let { img: newImg } = req.body; //Yeni gönderinin resmi
     const userId = req.user._id.toString(); //Kullanıcı ID'si
 
-    const currentUser = await User.findById(userId); //Kullanıcıyı bulur
+    // Kullanıcıyı buluyoruz
+    const currentUser = await User.findById(userId);
     if (!currentUser) {
-      //Kullanıcı yoksa hata döner
       return res.status(404).json({ message: "User not found" });
     }
+
+    // Hem metin hem de resim eksikse hata döndürüyoruz
     if (!newText && !newImg) {
-      //Hem metin hem resim eksikse hata döner
       return res.status(400).json({ message: "Please provide text or image" });
     }
+
+    // Eğer resim varsa, Cloudinary'ye yükliyoruz
     if (newImg) {
-      //Yeni gönderinin resmi varsa
-      const uploadedResponse = await cloudinary.uploader.upload(newImg, {
-        img: uploadedResponse.secure_url,
-      });
+      const uploadedResponse = await cloudinary.uploader.upload(newImg);
+      newImg = uploadedResponse.secure_url; // Resmin güvenli URL'sini alıyoruz
     }
 
+    // Yeni gönderiyi oluşturuyoruz
     const createdPost = new Post({
-      //Yeni gönderiyi oluşturur
       user: userId,
       text: newText,
-      img: newImg,
+      img: newImg || "", // Eğer resim yoksa boş bir string olarak kaydediyoruz
     });
 
-    await createdPost.save(); //Gönderiyi kaydeder
-    res.status(201).json(createdPost); //Başarıyla oluşturulan gönderiyi döner
+    // Gönderiyi veritabanına kaydediyoruz
+    await createdPost.save();
+
+    res.status(201).json(createdPost);
   } catch (error) {
     console.log("Error in createNewPost controller", error.message);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message || "Internal Server Error" });
   }
 };
 
