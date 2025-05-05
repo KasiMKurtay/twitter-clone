@@ -2,29 +2,16 @@ import { useRef, useState } from "react";
 import { IoCloseSharp } from "react-icons/io5";
 import { CiImageOn } from "react-icons/ci";
 import { BsEmojiSmileFill } from "react-icons/bs";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
+import { useAuth } from "../../hooks/useFollow";
 
 const CreatePost = () => {
   const [text, setText] = useState("");
   const [img, setImg] = useState(null);
   const imgReference = useRef(null);
 
-  const { data: authUser } = useQuery({
-    queryKey: ["authUser"],
-    queryFn: async () => {
-      try {
-        const res = await fetch("/api/auth/me");
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || "Something went wrong");
-        }
-        return data ?? null;
-      } catch (error) {
-        throw new Error(error.message || "An unexpected error occurred");
-      }
-    },
-  });
+  const { authUser } = useAuth();
   const queryClient = useQueryClient();
 
   const {
@@ -82,7 +69,7 @@ const CreatePost = () => {
       <div className="avatar">
         <div className="w-8 rounded-full">
           <img
-            src={authUser.profileImg || "/avatar-placeholder.png"}
+            src={authUser?.profileImg || "/avatar-placeholder.png"}
             alt="avatar "
           />
         </div>
